@@ -75,17 +75,12 @@ Migrations are not a part of the repository - they are ignored in `.gitignore`.
 ## Overview
 
 - Solution structure:
-	- `Skoruba.IdentityServer4` - Quickstart UI for an in-memory IdentityServer4 (for development) - (https://github.com/IdentityServer/IdentityServer4.Quickstart.UI)
-	- `Skoruba.IdentityServer4.AspNetIdentity` - [Quickstart UI for the IdentityServer4 with Asp.Net Core Identity and EF Core storage](https://github.com/IdentityServer/IdentityServer4.Samples/tree/release/Quickstarts/Combined_AspNetIdentity_and_EntityFrameworkStorage)
-	- `Skoruba.IdentityServer4.Admin` - ASP.NET Core MVC application that contains Admin UI
-    - `Skoruba.IdentityServer4.Admin.BusinessLogic` - project that contains Dtos, Repositories, Services and Mappers
-	- `Skoruba.IdentityServer4.Admin.EntityFramework` - EF Core data layer that contains AdminDbContext and Entities
-	- `Skoruba.IdentityServer4.Admin.IntegrationTests` - xUnit project that contains the integration tests
-	- `Skoruba.IdentityServer4.Admin.UnitTests` - xUnit project that contains the unit tests
-
-- The admininistration contains the following sections:
-
-![Skoruba.IdentityServer4.Admin App](docs/Images/Skoruba.IdentityServer4.Admin-Solution.png)
+	- `Trov.IdentityServer4` - [Quickstart UI for the IdentityServer4 with Asp.Net Core Identity and EF Core storage](https://github.com/IdentityServer/IdentityServer4.Samples/tree/release/Quickstarts/Combined_AspNetIdentity_and_EntityFrameworkStorage)
+	- `Trov.IdentityServer4.Admin` - ASP.NET Core MVC application that contains Admin UI
+    - `Trov.IdentityServer4.Admin.BusinessLogic` - project that contains Dtos, Repositories, Services and Mappers
+	- `Trov.IdentityServer4.EntityFramework` - EF Core data layer that contains AdminDbContext and Entities
+	- `Trov.IdentityServer4.Admin.IntegrationTests` - xUnit project that contains the integration tests
+	- `Trov.IdentityServer4.Admin.UnitTests` - xUnit project that contains the unit tests
 
 ## IdentityServer4
     
@@ -142,10 +137,6 @@ It is possible to define the configuration according the client type - by defaul
 - Entities:
     - Role Claims
 
-## Application Diagram
-
-![Skoruba.IdentityServer4.Admin Diagram](docs/Images/Skoruba.IdentityServer4.Admin-App-Diagram.png)
-
 ## Plan & Vision
 
 - Add more unit and integration tests :blush:
@@ -173,8 +164,22 @@ Thanks to [Tomáš Hübelbauer](https://github.com/TomasHubelbauer) for the init
 
 Thanks to [Dominick Baier](https://github.com/leastprivilege) and [Brock Allen](https://github.com/brockallen) - the creators of IdentityServer4.
 
-## Contact and Suggestion
+## Local set up
 
-I am happy to share my attempt of the implementation of the administration for IdentityServer4 and ASP.NET Core Identity.
+1) Check if you have MySql running on your PC
 
-Any feedback is welcome - feel free to create an issue or send me an email - [jan@skoruba.com](mailto:jan@skoruba.com). Thank you :blush:
+2) You need ef migrations for this project. 
+Migrations are located at {ProjectFolder}\src\Trov.IdentityServer4.Admin\Data\Migrations.
+If this folder is empty you should run these commands in package management console:
+- Add-Migration DbInitIdentity -context AdminDbContext -output Data/Migrations
+- Add-Migration DbInitConfig -context ConfigurationDbContext -output Data/Migrations
+
+3) run project from {ProjectFolder}\src\Trov.IdentityServer4 (use "dotnet run" or Visual Studio)
+
+4) run project from {ProjectFolder}\src\Trov.IdentityServer4.Admin (use "dotnet run" or Visual Studio)
+If you run this project for the first time use argument '/seed' ("dotnet run /seed" for example or insert it in Argument section of Debug page of project properties) for applying migration to db.
+
+5) try to connect to localhost:9000 using browser
+
+Done!
+ 
