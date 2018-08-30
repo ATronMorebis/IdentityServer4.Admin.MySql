@@ -28,21 +28,23 @@ namespace Trov.IdentityServer4.Admin.BusinessLogic.Repositories
         public async Task<PagedList<PersistedGrantDataView>> GetPersitedGrantsByUsers(string search, int page = 1, int pageSize = 10)
         {
             var pagedList = new PagedList<PersistedGrantDataView>();
+            var users = await _dbContext.Users.ToListAsync();
+            var persistedGrants = await _configDbContext.PersistedGrants.ToListAsync();
 
-            var persistedGrantByUsers = (from pe in _configDbContext.PersistedGrants
-                                         join us in _dbContext.Users on Convert.ToInt32(pe.SubjectId) equals us.Id into per
+            var persistedGrantByUsers = (from pe in persistedGrants
+                                         join us in users on Convert.ToInt32(pe.SubjectId) equals us.Id into per
                                          from us in per.DefaultIfEmpty()
                                          select new PersistedGrantDataView
                                          {
                                              SubjectId = pe.SubjectId,
                                              SubjectName = us == null ? string.Empty : us.UserName
                                          })
-                .Distinct();
+                .Distinct().Where(x => string.IsNullOrEmpty(search) || (x.SubjectId.Contains(search) || x.SubjectName.Contains(search)))
+                .AsEnumerable().ToList();
 
-            Expression<Func<PersistedGrantDataView, bool>> searchCondition = x => x.SubjectId.Contains(search) || x.SubjectName.Contains(search);
 
-            var persistedGrantsData = await persistedGrantByUsers.WhereIf(!string.IsNullOrEmpty(search), searchCondition).PageBy(x => x.SubjectId, page, pageSize).ToListAsync();
-            var persistedGrantsDataCount = await persistedGrantByUsers.WhereIf(!string.IsNullOrEmpty(search), searchCondition).CountAsync();
+            var persistedGrantsData = persistedGrantByUsers.OrderBy(x => x.SubjectId).Skip(page * pageSize).Take(pageSize).ToList();
+            var persistedGrantsDataCount = persistedGrantByUsers.Count;
 
             pagedList.Data.AddRange(persistedGrantsData);
             pagedList.TotalCount = persistedGrantsDataCount;
@@ -98,19 +100,19 @@ namespace Trov.IdentityServer4.Admin.BusinessLogic.Repositories
         {
             var grants = await _configDbContext.PersistedGrants.Where(x => x.SubjectId == userId.ToString()).ToListAsync();
 
-            _dbContext.RemoveRange(grants);
+            _configDbContext.RemoveRange(grants);
 
             return await AutoSaveChangesAsync();
         }
 
         private async Task<int> AutoSaveChangesAsync()
         {
-            return AutoSaveChanges ? await _dbContext.SaveChangesAsync() : (int)SavedStatus.WillBeSavedExplicitly;
+            return AutoSaveChanges ? await _configDbContext.SaveChangesAsync() : (int)SavedStatus.WillBeSavedExplicitly;
         }
 
         public async Task<int> SaveAllChangesAsync()
         {
-            return await _dbContext.SaveChangesAsync();
+            return await _configDbContext.SaveChangesAsync();
         }
     }
 }
